@@ -1,0 +1,18 @@
+.lc {
+  --like-color: #1890FF;
+  --inactive-stroke: #D1D5DB;
+  --inactive-text: #6B7280;
+}
+
+.lc-btn.active[data-testid='like-btn'] {
+  color: var(--like-color);
+}
+
+.lc-btn.active.pulse-on[data-testid='like-btn']::after {
+  background: radial-gradient(circle, rgba(24, 144, 255, 0.25) 0%, rgba(24, 144, 255, 0) 70%);
+}
+
+.lc-btn.pulse-off[data-testid='like-btn']::after {
+  border-color: rgba(24, 144, 255, 0.9);
+}
+

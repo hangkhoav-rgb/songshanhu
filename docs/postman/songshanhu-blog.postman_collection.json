@@ -1,0 +1,168 @@
+{
+  "info": {
+    "name": "songshanhu-blog-platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"demo_user\",\n  \"password\": \"123456\",\n  \"nickname\": \"Demo\",\n  \"email\": \"demo_user@example.com\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.environment.set('token', json?.data?.token || '');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (username/email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"demo_user\",\n  \"password\": \"123456\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.mustResetPassword) { pm.environment.set('firstResetToken', json?.data?.resetToken || ''); }",
+                  "if (json?.data?.token) { pm.environment.set('token', json?.data?.token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "First Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/first-reset",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "first-reset"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resetToken\": \"{{firstResetToken}}\",\n  \"newPassword\": \"123456\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.environment.set('token', json?.data?.token || '');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Actions (30 days)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/actions?current=1&size=10&days=30",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "actions"],
+              "query": [
+                { "key": "current", "value": "1" },
+                { "key": "size", "value": "10" },
+                { "key": "days", "value": "30" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Article",
+      "item": [
+        {
+          "name": "My Actions (favorites/likes)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/article/actions/mine?current=1&size=10&liked=true&collected=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "article", "actions", "mine"],
+              "query": [
+                { "key": "current", "value": "1" },
+                { "key": "size", "value": "10" },
+                { "key": "liked", "value": "true" },
+                { "key": "collected", "value": "true" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

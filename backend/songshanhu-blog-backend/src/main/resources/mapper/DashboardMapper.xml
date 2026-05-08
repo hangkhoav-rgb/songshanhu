@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.songshanhu.blog.mapper.DashboardMapper">
+
+  <select id="selectSummary" resultType="com.songshanhu.blog.dto.response.DashboardSummaryResponse">
+    select
+      (select count(*) from article_like where user_id = #{userId}) as likeCount,
+      (select count(*) from article_collect where user_id = #{userId}) as collectCount,
+      (select max(tmax) from (
+        select max(create_time) as tmax from article_like where user_id = #{userId}
+        union all
+        select max(create_time) as tmax from article_collect where user_id = #{userId}
+      ) t) as lastActionTime
+  </select>
+
+  <select id="selectRecentActions" resultType="com.songshanhu.blog.dto.response.DashboardActionVO">
+    select
+      a.id as articleId,
+      a.title as title,
+      t.action_type as actionType,
+      t.action_time as actionTime
+    from (
+      <trim suffixOverrides="union all">
+        <if test="actionType == null or actionType == '' or actionType == 'liked'">
+          select article_id, 'liked' as action_type, create_time as action_time
+          from article_like
+          where user_id = #{userId}
+            and create_time &gt;= timestampadd(day, -#{days}, now())
+          union all
+        </if>
+        <if test="actionType == null or actionType == '' or actionType == 'collected'">
+          select article_id, 'collected' as action_type, create_time as action_time
+          from article_collect
+          where user_id = #{userId}
+            and create_time &gt;= timestampadd(day, -#{days}, now())
+          union all
+        </if>
+      </trim>
+    ) t
+    join article a on a.id = t.article_id
+    order by t.action_time desc
+  </select>
+
+</mapper>

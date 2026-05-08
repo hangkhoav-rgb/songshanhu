@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.songshanhu.blog.mapper.ArticleActionMapper">
+  <select id="selectUserActions" resultType="com.songshanhu.blog.dto.response.ArticleActionItem">
+    select
+      a.id,
+      a.title,
+      a.summary,
+      a.cover_image as coverImage,
+      a.category,
+      a.author_id as authorId,
+      a.author_name as authorName,
+      a.views,
+      a.comments,
+      a.likes,
+      t.liked_at as likedAt,
+      t.collected_at as collectedAt,
+      t.action_time as actionTime
+    from (
+      select
+        article_id,
+        max(case when action_type = 'liked' then action_time end) as liked_at,
+        max(case when action_type = 'collected' then action_time end) as collected_at,
+        max(action_time) as action_time
+      from (
+        <trim suffixOverrides="union all">
+          <if test="liked">
+            select article_id, create_time as action_time, 'liked' as action_type
+            from article_like
+            where user_id = #{userId}
+            union all
+          </if>
+          <if test="collected">
+            select article_id, create_time as action_time, 'collected' as action_type
+            from article_collect
+            where user_id = #{userId}
+            union all
+          </if>
+        </trim>
+      ) u
+      group by article_id
+    ) t
+    join article a on a.id = t.article_id
+    order by t.action_time desc
+  </select>
+</mapper>
+

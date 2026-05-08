@@ -1,0 +1,49 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: songshanhu-blog-backend
+  
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/songshanhu_blog?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:}
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:dGhpcy1pcy1hLXZlcnktbG9uZy1hbmQtc2VjdXJlLWtleS1mb3Itand0LXNpZ25pbmc=}
+  expiration: 86400000 # 1 day in milliseconds
+  reset-expiration: 600000 # 10 minutes
+  header: Authorization
+
+upload:
+  avatar-dir: ./uploads/avatars/
+  avatar-signing-secret: ${AVATAR_SIGNING_SECRET:${jwt.secret}}
+  avatar-url-exp-seconds: 3600

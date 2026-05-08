@@ -1,0 +1,18 @@
+.lc {
+  --favorite-color: #FF4D4F;
+  --inactive-stroke: #D1D5DB;
+  --inactive-text: #6B7280;
+}
+
+.lc-btn.active[data-testid='collect-btn'] {
+  color: var(--favorite-color);
+}
+
+.lc-btn.active.pulse-on[data-testid='collect-btn']::after {
+  background: radial-gradient(circle, rgba(255, 77, 79, 0.25) 0%, rgba(255, 77, 79, 0) 70%);
+}
+
+.lc-btn.pulse-off[data-testid='collect-btn']::after {
+  border-color: rgba(255, 77, 79, 0.9);
+}
+

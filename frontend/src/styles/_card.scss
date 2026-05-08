@@ -1,0 +1,12 @@
+:root {
+  --ui-border: #E5E7EB;
+  --ui-radius: 6px;
+  --ui-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.glass-card {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-shadow);
+}
+
