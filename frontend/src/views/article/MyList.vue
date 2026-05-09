@@ -3,7 +3,7 @@
     <div class="my-article-container site-container">
       <header class="header">
         <h1 class="serif-text">我的文章</h1>
-        <p>管理你的草稿与已发布内容</p>
+        <p>管理你的草稿、提交审核与发布内容</p>
       </header>
 
       <div class="toolbar glass-card">
@@ -21,8 +21,11 @@
 
         <el-select v-model="status" placeholder="状态" class="st" @change="refresh">
           <el-option label="全部" value="all" />
-          <el-option label="已发布" :value="1" />
           <el-option label="草稿" :value="0" />
+          <el-option label="待审核" :value="1" />
+          <el-option label="已发布" :value="2" />
+          <el-option label="驳回" :value="3" />
+          <el-option label="下架" :value="4" />
         </el-select>
 
         <el-button type="primary" round @click="refresh">搜索</el-button>
@@ -40,12 +43,13 @@
           <div class="left">
             <div class="title">{{ a.title }}</div>
             <div class="meta">
-              <span class="tag">{{ a.status === 1 ? '已发布' : '草稿' }}</span>
+              <span class="tag">{{ statusLabel(a.status) }}</span>
               <span class="dot">·</span>
               <span class="cat">{{ a.category }}</span>
               <span class="dot">·</span>
               <span class="views">{{ a.views || 0 }} 阅读</span>
             </div>
+            <div v-if="showReason(a)" class="reason">原因：{{ a.lastReviewReason }}</div>
             <div v-if="cleanArticleSummary(String(a.summary || ''))" class="summary">{{ cleanArticleSummary(String(a.summary || '')) }}</div>
           </div>
           <div class="right">
@@ -83,7 +87,7 @@ const route = useRoute()
 const router = useRouter()
 
 const keyword = ref('')
-const status = ref<'all' | 0 | 1>('all')
+const status = ref<'all' | 0 | 1 | 2 | 3 | 4>('all')
 const items = ref<Article[]>([])
 const current = ref(1)
 const pageSize = 10
@@ -133,6 +137,27 @@ const loadMore = async () => {
   await fetchPage(current.value)
 }
 
+const statusLabel = (s: number) => {
+  switch (s) {
+    case 0:
+      return '草稿'
+    case 1:
+      return '待审核'
+    case 2:
+      return '已发布'
+    case 3:
+      return '驳回'
+    case 4:
+      return '下架'
+    default:
+      return `状态${s}`
+  }
+}
+
+const showReason = (a: Article) => {
+  return (a.status === 3 || a.status === 4) && !!a.lastReviewReason
+}
+
 const scrollToHighlight = () => {
   if (!highlightId.value) return
   const el = document.getElementById(`article-${highlightId.value}`)
@@ -146,7 +171,7 @@ const scrollToHighlight = () => {
 
 onMounted(async () => {
   if (route.query.published === '1') {
-    ElMessage.success({ message: '发布成功', duration: 3000 })
+    ElMessage.success({ message: '已提交审核', duration: 3000 })
   }
   await fetchPage(1)
   await nextTick()
@@ -201,6 +226,13 @@ onMounted(async () => {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  .reason {
+    color: var(--danger);
+    font-size: 12px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    word-break: break-word;
   }
   .cover {
     width: 160px;

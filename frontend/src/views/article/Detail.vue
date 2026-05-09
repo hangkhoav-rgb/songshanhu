@@ -271,7 +271,7 @@ const fetchArticleDetail = async () => {
     })
   } catch (error) {
     console.error('获取文章详情失败:', error)
-    errorMessage.value = '请检查网络或稍后重试'
+    errorMessage.value = (error as any)?.message || '请检查网络或稍后重试'
   } finally {
     loading.value = false
   }

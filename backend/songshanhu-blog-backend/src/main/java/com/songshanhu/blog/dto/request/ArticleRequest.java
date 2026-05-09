@@ -11,5 +11,5 @@ public class ArticleRequest {
     private String coverImage;
     private Double longitude;
     private Double latitude;
-    private Integer status; // 0-draft, 1-published
+    private Integer status;
 }

@@ -322,7 +322,7 @@ const articlesLoading = ref(false)
 const fetchRecentArticles = async () => {
   articlesLoading.value = true
   try {
-    const res = await articleApi.getMine({ current: 1, size: 6, status: 1 })
+    const res = await articleApi.getMine({ current: 1, size: 6 })
     recentArticles.value = res?.records || []
   } catch {
     recentArticles.value = []

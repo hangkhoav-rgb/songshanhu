@@ -9,6 +9,7 @@ import com.songshanhu.blog.entity.ArticleCollect;
 import com.songshanhu.blog.entity.ArticleLike;
 import com.songshanhu.blog.entity.Article;
 import com.songshanhu.blog.entity.User;
+import com.songshanhu.blog.enums.ArticleStatus;
 import com.songshanhu.blog.mapper.ArticleActionMapper;
 import com.songshanhu.blog.mapper.ArticleCollectMapper;
 import com.songshanhu.blog.mapper.ArticleLikeMapper;
@@ -76,6 +77,8 @@ public class ArticleController {
             String username = ((UserDetails) principal).getUsername();
             User user = userService.findByUsername(username);
             authorId = user.getId();
+        } else {
+            status = ArticleStatus.PUBLISHED.getCode();
         }
         return Result.success(articleService.getArticlePage(current, size, category, keyword, authorId, status));
     }
@@ -83,10 +86,26 @@ public class ArticleController {
     @Operation(summary = "获取文章详情")
     @GetMapping("/{id}")
     public Result<Article> detail(@PathVariable Long id) {
-        return Result.success(articleService.getArticleById(id));
+        Article article = articleService.getArticleById(id);
+        if (article == null) {
+            return Result.error(404, "文章不存在");
+        }
+
+        Long viewerId = getOptionalCurrentUserId();
+        boolean isAuthor = viewerId != null && article.getAuthorId() != null && article.getAuthorId().equals(viewerId);
+        if (!isAuthor && (article.getStatus() == null || article.getStatus() != ArticleStatus.PUBLISHED.getCode())) {
+            return Result.error(403, "文章未发布或已下架");
+        }
+
+        if (!isAuthor && article.getStatus() != null && article.getStatus() == ArticleStatus.PUBLISHED.getCode()) {
+            Integer currentViews = article.getViews();
+            article.setViews(currentViews == null ? 1 : currentViews + 1);
+            articleService.updateById(article);
+        }
+        return Result.success(article);
     }
 
-    @Operation(summary = "发布文章")
+    @Operation(summary = "提交文章（草稿/提交审核）")
     @PostMapping("/publish")
     public Result<?> publish(@RequestBody ArticleRequest request) {
         log.info("用户发布文章: {}", request.getTitle());
@@ -104,7 +123,9 @@ public class ArticleController {
         article.setCoverImage(request.getCoverImage());
         article.setLongitude(request.getLongitude());
         article.setLatitude(request.getLatitude());
-        article.setStatus(request.getStatus() != null ? request.getStatus() : 1);
+        article.setStatus(request.getStatus() != null && request.getStatus() == ArticleStatus.DRAFT.getCode()
+                ? ArticleStatus.DRAFT.getCode()
+                : ArticleStatus.PENDING.getCode());
         
         article.setAuthorId(user.getId());
         article.setAuthorName(user.getNickname() != null ? user.getNickname() : user.getUsername());
@@ -114,6 +135,17 @@ public class ArticleController {
 
         articleService.publishArticle(article);
         return Result.success(article.getId());
+    }
+
+    @Operation(summary = "重新提交审核")
+    @PostMapping("/{id}/resubmit")
+    public Result<?> resubmit(@PathVariable Long id) {
+        Long userId = getCurrentUserId();
+        boolean ok = articleService.resubmitArticle(id, userId);
+        if (!ok) {
+            return Result.error(403, "无权限或文章不存在");
+        }
+        return Result.success(null);
     }
 
     @Operation(summary = "获取我的文章列表（支持草稿/已发布）")
@@ -268,5 +300,23 @@ public class ArticleController {
         String username = ((UserDetails) principal).getUsername();
         User user = userService.findByUsername(username);
         return user.getId();
+    }
+
+    private Long getOptionalCurrentUserId() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                return null;
+            }
+            Object principal = auth.getPrincipal();
+            if (!(principal instanceof UserDetails)) {
+                return null;
+            }
+            String username = ((UserDetails) principal).getUsername();
+            User user = userService.findByUsername(username);
+            return user == null ? null : user.getId();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

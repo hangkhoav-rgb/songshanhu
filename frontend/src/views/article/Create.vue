@@ -114,7 +114,7 @@
                   </div>
 
                   <div class="tool-right">
-                    <span class="tool-hint muted">支持粘贴图片/链接，发布后自动渲染图表与地图</span>
+                    <span class="tool-hint muted">支持粘贴图片/链接，审核通过后会公开展示</span>
                   </div>
                 </div>
 
@@ -143,7 +143,7 @@
             <div class="submit-actions">
               <el-button size="large" round @click="router.back()">取消</el-button>
               <el-button type="primary" size="large" round :loading="publishing" @click="handlePublish">
-                发布博文
+                提交审核
               </el-button>
             </div>
           </div>
@@ -410,11 +410,11 @@ const handlePublish = async () => {
       latitude: articleForm.location ? articleForm.location[1] : undefined,
       status: 1
     })
-    ElMessage.success({ message: '发布成功', duration: 3000 })
+    ElMessage.success({ message: '已提交审核，请等待审核结果', duration: 3000 })
     localStorage.removeItem(DRAFT_KEY)
     router.push({ path: '/article/mine', query: { highlight: String(articleId), published: '1' } })
   } catch (error: any) {
-    const msg = error?.message || '发布失败'
+    const msg = error?.message || '提交失败'
     ElMessage.error(msg)
   } finally {
     publishing.value = false

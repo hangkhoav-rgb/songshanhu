@@ -28,7 +28,10 @@ export interface Article {
   authorId: number
   authorName: string
   category: string
-  status: number // 0-draft, 1-published
+  status: number // 0-草稿,1-待审核,2-已发布,3-驳回,4-下架
+  lastReviewReason?: string
+  lastReviewTime?: string
+  lastReviewResult?: string
   views: number
   likes: number
   comments: number

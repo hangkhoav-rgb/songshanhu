@@ -35,7 +35,10 @@ CREATE TABLE IF NOT EXISTS `article` (
   `views` int(11) DEFAULT '0' COMMENT '阅读量',
   `comments` int(11) DEFAULT '0' COMMENT '评论数',
   `likes` int(11) DEFAULT '0' COMMENT '点赞数',
-  `status` tinyint(1) DEFAULT '1' COMMENT '状态: 0-草稿, 1-发布',
+  `status` tinyint(1) DEFAULT '0' COMMENT '状态: 0-草稿, 1-待审核, 2-已发布, 3-驳回, 4-下架',
+  `last_review_reason` varchar(500) DEFAULT NULL COMMENT '最近一次审核原因',
+  `last_review_time` datetime DEFAULT NULL COMMENT '最近一次审核时间',
+  `last_review_result` varchar(20) DEFAULT NULL COMMENT '最近一次审核结果(approve/reject/offline/submit)',
   `longitude` double DEFAULT NULL COMMENT '经度',
   `latitude` double DEFAULT NULL COMMENT '纬度',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -85,3 +88,19 @@ CREATE TABLE IF NOT EXISTS `article_collect` (
   KEY `idx_user_time` (`user_id`, `create_time`),
   KEY `idx_article_time` (`article_id`, `create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章收藏表';
+
+-- 文章审核记录表
+CREATE TABLE IF NOT EXISTS `biz_article_review` (
+  `id` bigint(20) not null auto_increment,
+  `article_id` bigint(20) not null,
+  `reviewer` varchar(64) default '',
+  `result` varchar(20) not null,
+  `reason` varchar(500) default null,
+  `hit_level` tinyint(1) default null,
+  `hit_words` varchar(2000) default null,
+  `create_time` datetime default current_timestamp,
+  primary key (id),
+  key idx_biz_article_review_article (article_id),
+  key idx_biz_article_review_result (result),
+  key idx_biz_article_review_time (create_time)
+) engine=innodb default charset=utf8mb4 comment='文章审核记录';

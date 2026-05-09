@@ -30,7 +30,13 @@ public class Article {
     
     private Integer likes;
     
-    private Integer status; // 0-draft, 1-published
+    private Integer status;
+
+    private String lastReviewReason;
+
+    private LocalDateTime lastReviewTime;
+
+    private String lastReviewResult;
     
     private Double longitude;
     
